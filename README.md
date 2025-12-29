@@ -84,9 +84,9 @@ http://localhost:8080
 
 
 
-\## 👩‍💻 Author
+Author
 
-\*\*Janaranjani\*\*
+Janaranjani
 
 
 
