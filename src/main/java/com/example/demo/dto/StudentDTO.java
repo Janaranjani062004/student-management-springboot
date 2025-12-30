@@ -20,7 +20,7 @@ public class StudentDTO {
     @Min(value = 1, message = "Age must be greater than 0")
     private Integer age;
 
-    // ✅ Getters and Setters
+    
 
     public int getId() {
         return id;
