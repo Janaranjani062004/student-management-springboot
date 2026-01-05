@@ -4,9 +4,11 @@ WORKDIR /app
 
 COPY . .
 
-# Fix permission issue for Linux
+# ✅ Give execute permission
 RUN chmod +x mvnw
 
+# ✅ Now run Maven
 RUN ./mvnw clean package -DskipTests
 
-CMD ["java", "-jar", "target/demo-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/*.jar"]
+
