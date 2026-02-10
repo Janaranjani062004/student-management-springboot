@@ -7,8 +7,6 @@ import jakarta.validation.constraints.NotNull;
 
 public class StudentDTO {
 
-    private int id;
-
     @NotBlank(message = "Name must not be empty")
     private String name;
 
@@ -20,16 +18,7 @@ public class StudentDTO {
     @Min(value = 1, message = "Age must be greater than 0")
     private Integer age;
 
-    
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
+    // getters and setters
     public String getName() {
         return name;
     }
@@ -41,17 +30,18 @@ public class StudentDTO {
     public String getEmail() {
         return email;
     }
-
+ 
     public void setEmail(String email) {
         this.email = email;
     }
-
+ 
     public Integer getAge() {
         return age;
     }
-
+ 
     public void setAge(Integer age) {
         this.age = age;
     }
 }
+
 
