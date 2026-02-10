@@ -1,13 +1,19 @@
 package com.example.demo.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.StudentDTO;
+import com.example.demo.exception.StudentNotFoundException;
 import com.example.demo.model.Student;
 import com.example.demo.repository.StudentRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -19,12 +25,14 @@ public class StudentService {
     }
 
     // ================= CREATE =================
-    public Student saveStudent(Student student) {
-        return studentRepository.save(student);
+    public StudentDTO saveStudent(StudentDTO dto) {
+        Student student = mapToEntity(dto);
+        Student savedStudent = studentRepository.save(student);
+        return mapToDTO(savedStudent);
     }
 
     // ================= READ ALL WITH PAGINATION =================
-    public Page<Student> getAllStudents(int page, int size) {
+    public Page<StudentDTO> getAllStudents(int page, int size) {
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -32,11 +40,18 @@ public class StudentService {
                 Sort.by("id").descending()
         );
 
-        return studentRepository.findAll(pageable);
+        Page<Student> studentPage = studentRepository.findAll(pageable);
+
+        List<StudentDTO> dtoList = studentPage.getContent()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, studentPage.getTotalElements());
     }
 
     // ================= SEARCH BY NAME =================
-    public Page<Student> searchStudentsByName(String name, int page, int size) {
+    public Page<StudentDTO> searchStudentsByName(String name, int page, int size) {
 
         Pageable pageable = PageRequest.of(
                 page,
@@ -44,32 +59,65 @@ public class StudentService {
                 Sort.by("id").descending()
         );
 
-        return studentRepository.findByNameContainingIgnoreCase(name, pageable);
+        Page<Student> studentPage =
+                studentRepository.findByNameContainingIgnoreCase(name, pageable);
+
+        List<StudentDTO> dtoList = studentPage.getContent()
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, studentPage.getTotalElements());
     }
 
     // ================= READ BY ID =================
-    public Student getStudentById(int id) {
-        return studentRepository.findById(id)
+    public StudentDTO getStudentById(int id) {
+
+        Student student = studentRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Student not found with id: " + id));
+                        new StudentNotFoundException("Student not found with id: " + id));
+
+        return mapToDTO(student);
     }
 
     // ================= UPDATE =================
-    public Student updateStudent(int id, Student studentDetails) {
+    public StudentDTO updateStudent(int id, StudentDTO dto) {
 
-        Student student = getStudentById(id);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() ->
+                        new StudentNotFoundException("Student not found with id: " + id));
 
-        student.setName(studentDetails.getName());
-        student.setEmail(studentDetails.getEmail());
-        student.setAge(studentDetails.getAge());
+        student.setName(dto.getName());
+        student.setEmail(dto.getEmail());
+        student.setAge(dto.getAge());
 
-        return studentRepository.save(student);
+        Student updatedStudent = studentRepository.save(student);
+        return mapToDTO(updatedStudent);
     }
 
     // ================= DELETE =================
     public void deleteStudent(int id) {
-        studentRepository.deleteById(id);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() ->
+                        new StudentNotFoundException("Student not found with id: " + id));
+        studentRepository.delete(student);
+    }
+
+    // ================= MAPPING METHODS =================
+    private StudentDTO mapToDTO(Student student) {
+        StudentDTO dto = new StudentDTO();
+        dto.setId(student.getId());
+        dto.setName(student.getName());
+        dto.setEmail(student.getEmail());
+        dto.setAge(student.getAge());
+        return dto;
+    }
+
+    private Student mapToEntity(StudentDTO dto) {
+        Student student = new Student();
+        student.setName(dto.getName());
+        student.setEmail(dto.getEmail());
+        student.setAge(dto.getAge());
+        return student;
     }
 }
-
-

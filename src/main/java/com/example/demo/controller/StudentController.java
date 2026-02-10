@@ -5,13 +5,21 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.StudentDTO;
-import com.example.demo.model.Student;
 import com.example.demo.service.StudentService;
+
+import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -26,25 +34,21 @@ public class StudentController {
 
     // ================= CREATE STUDENT =================
     @PostMapping
-    public ResponseEntity<Student> saveStudent(@Valid @RequestBody StudentDTO studentDTO) {
+    public ResponseEntity<StudentDTO> saveStudent(
+            @Valid @RequestBody StudentDTO studentDTO) {
 
-        Student student = new Student();
-        student.setName(studentDTO.getName());
-        student.setEmail(studentDTO.getEmail());
-        student.setAge(studentDTO.getAge());
-
-        Student savedStudent = studentService.saveStudent(student);
+        StudentDTO savedStudent = studentService.saveStudent(studentDTO);
         return ResponseEntity.ok(savedStudent);
     }
 
     // ================= READ ALL + SEARCH + PAGINATION =================
     @GetMapping
-    public ResponseEntity<Page<Student>> getStudents(
+    public ResponseEntity<Page<StudentDTO>> getStudents(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String search) {
 
-        Page<Student> students;
+        Page<StudentDTO> students;
 
         if (search == null || search.trim().isEmpty()) {
             students = studentService.getAllStudents(page, size);
@@ -57,24 +61,27 @@ public class StudentController {
 
     // ================= READ BY ID =================
     @GetMapping("/{id}")
-    public ResponseEntity<Student> getStudentById(@PathVariable int id) {
-        Student student = studentService.getStudentById(id);
+    public ResponseEntity<StudentDTO> getStudentById(@PathVariable int id) {
+        StudentDTO student = studentService.getStudentById(id);
         return ResponseEntity.ok(student);
     }
 
     // ================= UPDATE STUDENT =================
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(
+    public ResponseEntity<StudentDTO> updateStudent(
             @PathVariable int id,
-            @Valid @RequestBody Student studentDetails) {
+            @Valid @RequestBody StudentDTO studentDTO) {
 
-        Student updatedStudent = studentService.updateStudent(id, studentDetails);
+        StudentDTO updatedStudent =
+                studentService.updateStudent(id, studentDTO);
+
         return ResponseEntity.ok(updatedStudent);
     }
 
     // ================= DELETE STUDENT =================
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteStudent(@PathVariable int id) {
+    public ResponseEntity<Map<String, Boolean>> deleteStudent(
+            @PathVariable int id) {
 
         studentService.deleteStudent(id);
 
@@ -84,6 +91,7 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 }
+
 
 
 
