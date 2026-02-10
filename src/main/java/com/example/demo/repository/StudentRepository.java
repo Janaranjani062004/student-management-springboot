@@ -8,7 +8,7 @@ import com.example.demo.model.Student;
 
 public interface StudentRepository extends JpaRepository<Student, Integer> {
 
-    // 🔍 Search students by name (case-insensitive, partial match) with pagination
+    //  Search students by name (case-insensitive, partial match) with pagination
     Page<Student> findByNameContainingIgnoreCase(String name, Pageable pageable);
 }
 

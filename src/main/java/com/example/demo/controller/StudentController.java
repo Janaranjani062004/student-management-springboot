@@ -1,12 +1,9 @@
 package com.example.demo.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +15,7 @@ import com.example.demo.service.StudentService;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/students")
+@RequestMapping("/api/student")
 public class StudentController {
 
     private final StudentService studentService;
@@ -27,41 +24,45 @@ public class StudentController {
         this.studentService = studentService;
     }
 
-    // ================= CREATE =================
+    // ================= CREATE STUDENT =================
     @PostMapping
-    public Student saveStudent(@Valid @RequestBody StudentDTO studentDTO) {
+    public ResponseEntity<Student> saveStudent(@Valid @RequestBody StudentDTO studentDTO) {
 
         Student student = new Student();
         student.setName(studentDTO.getName());
         student.setEmail(studentDTO.getEmail());
         student.setAge(studentDTO.getAge());
 
-        return studentService.saveStudent(student);
+        Student savedStudent = studentService.saveStudent(student);
+        return ResponseEntity.ok(savedStudent);
     }
 
-    // ================= READ ALL or SEARCH WITH PAGINATION =================
+    // ================= READ ALL + SEARCH + PAGINATION =================
     @GetMapping
-    public Page<Student> getStudents(
+    public ResponseEntity<Page<Student>> getStudents(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "") String search) {
+            @RequestParam(required = false) String search) {
 
-        Pageable pageable = PageRequest.of(page, size);
+        Page<Student> students;
 
-        if (search.isEmpty()) {
-            return studentService.getStudentsWithPagination(page, size);
+        if (search == null || search.trim().isEmpty()) {
+            students = studentService.getAllStudents(page, size);
         } else {
-            return studentService.searchStudentsByName(search, pageable);
+            students = studentService.searchStudentsByName(search, page, size);
         }
+
+        return ResponseEntity.ok(students);
     }
 
     // ================= READ BY ID =================
     @GetMapping("/{id}")
-    public Student getStudentById(@PathVariable int id) {
-        return studentService.getStudentById(id);
+    public ResponseEntity<Student> getStudentById(@PathVariable int id) {
+        Student student = studentService.getStudentById(id);
+        return ResponseEntity.ok(student);
     }
 
-    // ================= UPDATE =================
+    // ================= UPDATE STUDENT =================
     @PutMapping("/{id}")
     public ResponseEntity<Student> updateStudent(
             @PathVariable int id,
@@ -71,15 +72,20 @@ public class StudentController {
         return ResponseEntity.ok(updatedStudent);
     }
 
-    // ================= DELETE =================
+    // ================= DELETE STUDENT =================
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Boolean>> deleteStudent(@PathVariable int id) {
 
         studentService.deleteStudent(id);
+
         Map<String, Boolean> response = new HashMap<>();
-        response.put("deleted", true);
+        response.put("deleted", Boolean.TRUE);
+
         return ResponseEntity.ok(response);
     }
 }
+
+
+
 
 

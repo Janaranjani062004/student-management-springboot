@@ -1,18 +1,15 @@
 package com.example.demo.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.model.Student;
 import com.example.demo.repository.StudentRepository;
 
 @Service
-@Transactional
 public class StudentService {
 
     private final StudentRepository studentRepository;
@@ -26,12 +23,31 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    // ================= READ (ALL) =================
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
+    // ================= READ ALL WITH PAGINATION =================
+    public Page<Student> getAllStudents(int page, int size) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("id").descending()
+        );
+
+        return studentRepository.findAll(pageable);
     }
 
-    // ================= READ (BY ID) =================
+    // ================= SEARCH BY NAME =================
+    public Page<Student> searchStudentsByName(String name, int page, int size) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("id").descending()
+        );
+
+        return studentRepository.findByNameContainingIgnoreCase(name, pageable);
+    }
+
+    // ================= READ BY ID =================
     public Student getStudentById(int id) {
         return studentRepository.findById(id)
                 .orElseThrow(() ->
@@ -41,32 +57,19 @@ public class StudentService {
     // ================= UPDATE =================
     public Student updateStudent(int id, Student studentDetails) {
 
-        Student existingStudent = getStudentById(id);
+        Student student = getStudentById(id);
 
-        existingStudent.setName(studentDetails.getName());
-        existingStudent.setEmail(studentDetails.getEmail());
-        existingStudent.setAge(studentDetails.getAge());
+        student.setName(studentDetails.getName());
+        student.setEmail(studentDetails.getEmail());
+        student.setAge(studentDetails.getAge());
 
-        return studentRepository.save(existingStudent);
+        return studentRepository.save(student);
     }
 
     // ================= DELETE =================
     public void deleteStudent(int id) {
-        Student student = getStudentById(id);
-        studentRepository.delete(student);
-    }
-
-    // ================= PAGINATION =================
-    public Page<Student> getStudentsWithPagination(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return studentRepository.findAll(pageable);
-    }
-
-    // ================= SEARCH WITH PAGINATION =================
-    public Page<Student> searchStudentsByName(String name, Pageable pageable) {
-        return studentRepository.findByNameContainingIgnoreCase(name, pageable);
+        studentRepository.deleteById(id);
     }
 }
-
 
 
